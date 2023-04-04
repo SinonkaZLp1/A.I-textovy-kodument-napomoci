@@ -1,1872 +1,617 @@
+About the Project
+Our goal with this project is to create a platform where people can share their stable diffusion models (textual inversions, hypernetworks, aesthetic gradients, VAEs, and any other crazy stuff people do to customize their AI generations), collaborate with others to improve them, and learn from each other's work. The platform allows users to create an account, upload their models, and browse models that have been shared by others. Users can also leave comments and feedback on each other's models to facilitate collaboration and knowledge sharing.
 
-N:\AI-image\model traning\aa\node_modules\axios\dist\node\axios.cjs:1900
-    reject(new AxiosError(
-           ^
-AxiosError: Request failed with status code 404
-    at settle (N:\AI-image\model traning\aa\node_modules\axios\dist\node\axios.cjs:1900:12)
-    at BrotliDecompress.handleStreamEnd (N:\AI-image\model traning\aa\node_modules\axios\dist\node\axios.cjs:2952:11)
-    at BrotliDecompress.emit (node:events:525:35)
-    at endReadableNT (node:internal/streams/readable:1359:12)
-    at process.processTicksAndRejections (node:internal/process/task_queues:82:21) {
-  code: 'ERR_BAD_REQUEST',
-  config: {
-    transitional: {
-      silentJSONParsing: true,
-      forcedJSONParsing: true,
-      clarifyTimeoutError: false
+Tech Stack
+We've built this project using a combination of modern web technologies, including Next.js for the frontend, TRPC for the API, and Prisma + Postgres for the database. By leveraging these tools, we've been able to create a scalable and maintainable platform that is both user-friendly and powerful.
+
+DB: Prisma + Postgres
+API: tRPC
+Front-end + Back-end: NextJS
+UI Kit: Mantine
+Storage: Cloudflare
+Getting Started
+To get a local copy up and running follow these simple example steps.
+
+Prerequisites
+First, make sure that you have the following installed on your machine:
+
+Node.js (version 18 or later)
+Docker (for running the database)
+We recommend you have installed nvm in order to set the right node version to run this project
+
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.2/install.sh | bash
+Installation
+Clone the repository to your local machine.
+Run npm install in the project directory to install the necessary dependencies.
+Spin up required services with docker-compose up -d
+Note: In addition to postgres and redis, this will also run maildev for email and minio for s3 storage with all necessary buckets automatically created, minio and maildev are not strictly needed but are preferred for testing and development purposes.
+Create your .env by making a copy of the contents from .env-example file.
+Most default values are configured to work with the docker-compose setup, with the exception of the S3 upload key and secret. To generate those, navigate to the minio web interface at http://localhost:9000 with the default username and password minioadmin, and then navigate to the "Access Keys" tab. Click "Create Access Key" and copy the generated key and secret into the .env file.
+Set WEBHOOK_TOKEN to a random string of your choice. This will be used to authenticate requests to the webhook endpoint.
+Run npm run db:migrate to run all database migrations.
+Run npm run db:generate to generate the prisma client.
+Start the development server by running npm run dev.
+Visit the page http://localhost:3000/api/webhooks/run-jobs?token=WEBHOOK_TOKEN&run=update-metrics to start the metrics update job (make sure to substitute WEBHOOK_TOKEN)
+Finally, visit http://localhost:3000 to see the website.
+Note that account creation will run emails through maildev, which can be accessed at http://localhost:1080.
+Also note that Cloudflare credentials are necessary in order for image uploads to work.
+Important Scripts
+docker-compose up -d # Spin up db, redis, maildev, and minio
+
+npm run dev # Start the dev environment
+
+npm run db:migrate -- --name migration-name # Create a database migration with prisma after updating the schema
+
+npm run db:generate # Generates local prisma client
+
+npm run db:ui # Start Prisma Studio to manage the database content
+
+npm run build # Build the NextJS project
+Contributing
+Any contributions you make are greatly appreciated.
+
+If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement". Don't forget to give the project a star! Thanks again!
+
+Fork the repository to your own GitHub account.
+Create a new branch for your changes.
+Make your changes to the code.
+Commit your changes and push the branch to your forked repository.
+Open a pull request on our repository.
+Sponsors
+Support this project by becoming a sponsor. Your logo will show up here with a link to your website.
+
+License
+
+REST API Reference
+Justin Maier edited this page last week · 23 revisions
+ Pages 9
+Find a page…
+Home
+About the Project
+Civitai Link Integration
+Diffusion Partner Program
+How to use models
+Image Reproduction
+Model Safety Checks
+Our Infrastructure
+REST API Reference
+Introduction
+Civitai API v1
+Creators
+Models
+Model
+Model Version
+Tags
+GET /api/v1/creators
+Endpoint URL
+Query Parameters
+Response Fields
+Example
+GET /api/v1/models
+Endpoint URL
+Query Parameters
+Response Fields
+Example
+GET /api/v1/models/:modelId
+Endpoint URL
+Response Fields
+Example
+GET /api/v1/models-versions/:modelVersionId
+Endpoint URL
+Response Fields
+Example
+GET /api/v1/models-versions/by-hash/:hash
+Endpoint URL
+Response Fields
+GET /api/v1/tags
+Endpoint URL
+Query Parameters
+Response Fields
+Example
+Clone this wiki locally
+https://github.com/civitai/civitai.wiki.git
+Introduction
+This article describes how to use the Civitai REST API. We are going to be describing the HTTP method, path, and parameters for every operation. The API will return the response status code, response headers, and a response body.
+
+This is still in active development and will be updated once more endpoints are made available for the public
+
+Civitai API v1
+Creators
+GET /api/v1/creators
+Models
+GET /api/v1/models
+Model
+GET /api/v1/models/:modelId
+Model Version
+GET /api/v1/model-versions/:modelVersionId
+GET /api/v1/model-versions/by-hash/:hash
+Tags
+GET /api/v1/tags
+GET /api/v1/creators
+Endpoint URL
+https://civitai.com/api/v1/creators
+
+Query Parameters
+Name	Type	Description
+limit (OPTIONAL)	number	The number of results to be returned per page. This can be a number between 0 and 200. By default, each page will return 20 results. If set to 0, it'll return all the creators
+page (OPTIONAL)	number	The page from which to start fetching creators
+query (OPTIONAL)	string	Search query to filter creators by username
+Response Fields
+Name	Type	Description
+username	string	The username of the creator
+modelCount	number	The amount of models linked to this user
+link	string	Url to get all models from this user
+metadata.totalItems	string	The total number of items available
+metadata.currentPage	string	The the current page you are at
+metadata.pageSize	string	The the size of the batch
+metadata.totalPages	string	The total number of pages
+metadata.nextPage	string	The url to get the next batch of items
+metadata.prevPage	string	The url to get the previous batch of items
+Example
+The following example shows a request to get the first 3 model tags from our database:
+
+curl https://civitai.com/api/v1/creators?limit=3 \
+-H "Content-Type: application/json" \
+-X GET
+This would yield the following response:
+
+{
+  "items": [
+    {
+      "username": "Civitai",
+      "modelCount": 848,
+      "link": "https://civitai.com/api/v1/models?username=Civitai"
     },
-    adapter: [ 'xhr', 'http' ],
-    transformRequest: [ [Function: transformRequest] ],
-    transformResponse: [ [Function: transformResponse] ],
-    timeout: 0,
-    xsrfCookieName: 'XSRF-TOKEN',
-    xsrfHeaderName: 'X-XSRF-TOKEN',
-    maxContentLength: -1,
-    maxBodyLength: -1,
-    env: {
-      FormData: [Function: FormData] {
-        LINE_BREAK: '\r\n',
-        DEFAULT_CONTENT_TYPE: 'application/octet-stream'
-      },
-      Blob: [class Blob]
+    {
+      "username": "JustMaier",
+      "modelCount": 8,
+      "link": "https://civitai.com/api/v1/models?username=JustMaier"
     },
-    validateStatus: [Function: validateStatus],
-    headers: AxiosHeaders {
-      Accept: 'application/json, text/plain, */*',
-      'User-Agent': 'axios/1.3.4',
-      'Accept-Encoding': 'gzip, compress, deflate, br'
-    },
-    method: 'get',
-    url: 'https://civitai.com/api/favorites?apikey=0ba945e3aa1cba96fffe14c7dbb87afa',
-    data: undefined
-  },
-  request: <ref *1> ClientRequest {
-    _events: [Object: null prototype] {
-      abort: [Function (anonymous)],
-      aborted: [Function (anonymous)],
-      connect: [Function (anonymous)],
-      error: [Function (anonymous)],
-      socket: [Function (anonymous)],
-      timeout: [Function (anonymous)],
-      finish: [Function: requestOnFinish]
-    },
-    _eventsCount: 7,
-    _maxListeners: undefined,
-    outputData: [],
-    outputSize: 0,
-    writable: true,
-    destroyed: true,
-    _last: true,
-    chunkedEncoding: false,
-    shouldKeepAlive: false,
-    maxRequestsOnConnectionReached: false,
-    _defaultKeepAlive: true,
-    useChunkedEncodingByDefault: false,
-    sendDate: false,
-    _removedConnection: false,
-    _removedContLen: false,
-    _removedTE: false,
-    strictContentLength: false,
-    _contentLength: 0,
-    _hasBody: true,
-    _trailer: '',
-    finished: true,
-    _headerSent: true,
-    _closed: true,
-    socket: TLSSocket {
-      _tlsOptions: {
-        allowHalfOpen: undefined,
-        pipe: false,
-        secureContext: SecureContext { context: SecureContext {} },
-        isServer: false,
-        requestCert: true,
-        rejectUnauthorized: true,
-        session: undefined,
-        ALPNProtocols: undefined,
-        requestOCSP: undefined,
-        enableTrace: undefined,
-        pskCallback: undefined,
-        highWaterMark: undefined,
-        onread: undefined,
-        signal: undefined
-      },
-      _secureEstablished: true,
-      _securePending: false,
-      _newSessionPending: false,
-      _controlReleased: true,
-      secureConnecting: false,
-      _SNICallback: null,
-      servername: 'civitai.com',
-      alpnProtocol: false,
-      authorized: true,
-      authorizationError: null,
-      encrypted: true,
-      _events: [Object: null prototype] {
-        close: [
-          [Function: onSocketCloseDestroySSL],
-          [Function: onClose],
-          [Function: socketCloseListener]
-        ],
-        end: [Function: onReadableStreamEnd],
-        newListener: [Function: keylogNewListener],
-        secure: [Function: onConnectSecure],
-        session: [Function (anonymous)],
-        free: [Function: onFree],
-        timeout: [Function: onTimeout],
-        agentRemove: [Function: onRemove],
-        error: [Function: socketErrorListener]
-      },
-      _eventsCount: 9,
-      connecting: false,
-      _hadError: false,
-      _parent: null,
-      _host: 'civitai.com',
-      _closeAfterHandlingError: false,
-      _readableState: ReadableState {
-        objectMode: false,
-        highWaterMark: 16384,
-        buffer: BufferList { head: null, tail: null, length: 0 },
-        length: 0,
-        pipes: [],
-        flowing: true,
-        ended: false,
-        endEmitted: false,
-        reading: true,
-        constructed: true,
-        sync: false,
-        needReadable: true,
-        emittedReadable: false,
-        readableListening: false,
-        resumeScheduled: false,
-        errorEmitted: false,
-        emitClose: false,
-        autoDestroy: true,
-        destroyed: true,
-        errored: null,
-        closed: true,
-        closeEmitted: true,
-        defaultEncoding: 'utf8',
-        awaitDrainWriters: null,
-        multiAwaitDrain: false,
-        readingMore: false,
-        dataEmitted: true,
-        decoder: null,
-        encoding: null,
-        [Symbol(kPaused)]: false
-      },
-      _maxListeners: undefined,
-      _writableState: WritableState {
-        objectMode: false,
-        highWaterMark: 16384,
-        finalCalled: true,
-        needDrain: false,
-        ending: true,
-        ended: true,
-        finished: true,
-        destroyed: true,
-        decodeStrings: false,
-        defaultEncoding: 'utf8',
-        length: 0,
-        writing: false,
-        corked: 0,
-        sync: false,
-        bufferProcessing: false,
-        onwrite: [Function: bound onwrite],
-        writecb: null,
-        writelen: 0,
-        afterWriteTickInfo: null,
-        buffered: [],
-        bufferedIndex: 0,
-        allBuffers: true,
-        allNoop: true,
-        pendingcb: 0,
-        constructed: true,
-        prefinished: true,
-        errorEmitted: false,
-        emitClose: false,
-        autoDestroy: true,
-        errored: null,
-        closed: true,
-        closeEmitted: true,
-        [Symbol(kOnFinished)]: []
-      },
-      allowHalfOpen: false,
-      _sockname: null,
-      _pendingData: null,
-      _pendingEncoding: '',
-      server: undefined,
-      _server: null,
-      ssl: null,
-      _requestCert: true,
-      _rejectUnauthorized: true,
-      parser: null,
-      _httpMessage: [Circular *1],
-      [Symbol(res)]: null,
-      [Symbol(verified)]: true,
-      [Symbol(pendingSession)]: null,
-      [Symbol(async_id_symbol)]: 5,
-      [Symbol(kHandle)]: null,
-      [Symbol(lastWriteQueueSize)]: 0,
-      [Symbol(timeout)]: null,
-      [Symbol(kBuffer)]: null,
-      [Symbol(kBufferCb)]: null,
-      [Symbol(kBufferGen)]: null,
-      [Symbol(kCapture)]: false,
-      [Symbol(kSetNoDelay)]: false,
-      [Symbol(kSetKeepAlive)]: true,
-      [Symbol(kSetKeepAliveInitialDelay)]: 60,
-      [Symbol(kBytesRead)]: 10522,
-      [Symbol(kBytesWritten)]: 223,
-      [Symbol(connect-options)]: {
-        rejectUnauthorized: true,
-        ciphers: 'TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA384:DHE-RSA-AES256-SHA384:ECDHE-RSA-AES256-SHA256:DHE-RSA-AES256-SHA256:HIGH:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!SRP:!CAMELLIA',
-        checkServerIdentity: [Function: checkServerIdentity],
-        minDHSize: 1024,
-        maxRedirects: 21,
-        maxBodyLength: Infinity,
-        protocol: 'https:',
-        path: null,
-        method: 'GET',
-        headers: [Object: null prototype] {
-          Accept: 'application/json, text/plain, */*',
-          'User-Agent': 'axios/1.3.4',
-          'Accept-Encoding': 'gzip, compress, deflate, br'
-        },
-        agents: { http: undefined, https: undefined },
-        auth: undefined,
-        beforeRedirect: [Function: dispatchBeforeRedirect],
-        beforeRedirects: { proxy: [Function: beforeRedirect] },
-        hostname: 'civitai.com',
-        port: 443,
-        agent: undefined,
-        nativeProtocols: {
-          'http:': {
-            _connectionListener: [Function: connectionListener],
-            METHODS: [Array],
-            STATUS_CODES: [Object],
-            Agent: [Function],
-            ClientRequest: [Function: ClientRequest],
-            IncomingMessage: [Function: IncomingMessage],
-            OutgoingMessage: [Function: OutgoingMessage],
-            Server: [Function: Server],
-            ServerResponse: [Function: ServerResponse],
-            createServer: [Function: createServer],
-            validateHeaderName: [Function: __node_internal_],
-            validateHeaderValue: [Function: __node_internal_],
-            get: [Function: get],
-            request: [Function: request],
-            setMaxIdleHTTPParsers: [Function: setMaxIdleHTTPParsers],
-            maxHeaderSize: [Getter],
-            globalAgent: [Getter/Setter]
-          },
-          'https:': {
-            Agent: [Function: Agent],
-            globalAgent: [Agent],
-            Server: [Function: Server],
-            createServer: [Function: createServer],
-            get: [Function: get],
-            request: [Function: request]
-          }
-        },
-        pathname: '/api/favorites',
-        search: '?apikey=0ba945e3aa1cba96fffe14c7dbb87afa',
-        _defaultAgent: Agent {
-          _events: [Object: null prototype] {
-            free: [Function (anonymous)],
-            newListener: [Function: maybeEnableKeylog]
-          },
-          _eventsCount: 2,
-          _maxListeners: undefined,
-          defaultPort: 443,
-          protocol: 'https:',
-          options: [Object: null prototype] { noDelay: true, path: null },
-          requests: [Object: null prototype] {},
-          sockets: [Object: null prototype] {},
-          freeSockets: [Object: null prototype] {},
-          keepAliveMsecs: 1000,
-          keepAlive: false,
-          maxSockets: Infinity,
-          maxFreeSockets: 256,
-          scheduling: 'lifo',
-          maxTotalSockets: Infinity,
-          totalSocketCount: 0,
-          maxCachedSessions: 100,
-          _sessionCache: { map: [Object], list: [Array] },
-          [Symbol(kCapture)]: false
-        },
-        host: 'civitai.com',
-        noDelay: true,
-        servername: 'civitai.com',
-        _agentKey: 'civitai.com:443:::::::::::::::::::::',
-        encoding: null,
-        singleUse: true
-      }
-    },
-    _header: 'GET /api/favorites?apikey=0ba945e3aa1cba96fffe14c7dbb87afa HTTP/1.1\r\n' +
-      'Accept: application/json, text/plain, */*\r\n' +
-      'User-Agent: axios/1.3.4\r\n' +
-      'Accept-Encoding: gzip, compress, deflate, br\r\n' +
-      'Host: civitai.com\r\n' +
-      'Connection: close\r\n' +
-      '\r\n',
-    _keepAliveTimeout: 0,
-    _onPendingData: [Function: nop],
-    agent: Agent {
-      _events: [Object: null prototype] {
-        free: [Function (anonymous)],
-        newListener: [Function: maybeEnableKeylog]
-      },
-      _eventsCount: 2,
-      _maxListeners: undefined,
-      defaultPort: 443,
-      protocol: 'https:',
-      options: [Object: null prototype] { noDelay: true, path: null },
-      requests: [Object: null prototype] {},
-      sockets: [Object: null prototype] {},
-      freeSockets: [Object: null prototype] {},
-      keepAliveMsecs: 1000,
-      keepAlive: false,
-      maxSockets: Infinity,
-      maxFreeSockets: 256,
-      scheduling: 'lifo',
-      maxTotalSockets: Infinity,
-      totalSocketCount: 0,
-      maxCachedSessions: 100,
-      _sessionCache: {
-        map: {
-          'civitai.com:443:::::::::::::::::::::': Buffer(1499) [Uint8Array] [
-             48, 130,   5, 215,   2,   1,   1,   2,   2,   3,   4,   4,
-              2,  19,   2,   4,  32,  22, 194, 200,  44, 154, 117, 103,
-            189, 252, 212,  39,  38,  86, 126, 162, 196, 253, 186, 161,
-            228,  33,  41,  16,  82,  52,  33, 205, 235,  15, 182,  94,
-             97,   4,  48, 204,   2, 143,   2,  83,  79, 219, 178, 253,
-            187, 152,  61, 234,  53, 156,  50, 143, 200, 104,  75,  47,
-            203,  26,  56, 141,  90, 142,  11, 251,   4, 173,  92, 248,
-             40, 148, 142,  76, 121, 195, 170,  77, 213, 115,  49,  74,
-            153,  46, 250, 161,
-            ... 1399 more items
-          ]
-        },
-        list: [ 'civitai.com:443:::::::::::::::::::::' ]
-      },
-      [Symbol(kCapture)]: false
-    },
-    socketPath: undefined,
-    method: 'GET',
-    maxHeaderSize: undefined,
-    insecureHTTPParser: undefined,
-    path: '/api/favorites?apikey=0ba945e3aa1cba96fffe14c7dbb87afa',
-    _ended: true,
-    res: IncomingMessage {
-      _readableState: ReadableState {
-        objectMode: false,
-        highWaterMark: 16384,
-        buffer: BufferList { head: null, tail: null, length: 0 },
-        length: 0,
-        pipes: [],
-        flowing: false,
-        ended: true,
-        endEmitted: true,
-        reading: false,
-        constructed: true,
-        sync: false,
-        needReadable: false,
-        emittedReadable: false,
-        readableListening: false,
-        resumeScheduled: false,
-        errorEmitted: false,
-        emitClose: true,
-        autoDestroy: true,
-        destroyed: true,
-        errored: null,
-        closed: true,
-        closeEmitted: true,
-        defaultEncoding: 'utf8',
-        awaitDrainWriters: null,
-        multiAwaitDrain: false,
-        readingMore: false,
-        dataEmitted: true,
-        decoder: null,
-        encoding: null,
-        [Symbol(kPaused)]: true
-      },
-      _events: [Object: null prototype] {
-        end: [
-          [Function: responseOnEnd],
-          [Function: onend],
-          [Function: onend]
-        ],
-        close: [
-          [Function (anonymous)],
-          [Function: onclose],
-          [Function: onclose]
-        ],
-        finish: [ [Function: onfinish], [Function: onfinish] ],
-        error: [
-          [Function: onerror],
-          [Function: onError],
-          [Function: onerror]
-        ]
-      },
-      _eventsCount: 4,
-      _maxListeners: undefined,
-      socket: TLSSocket {
-        _tlsOptions: {
-          allowHalfOpen: undefined,
-          pipe: false,
-          secureContext: SecureContext { context: SecureContext {} },
-          isServer: false,
-          requestCert: true,
-          rejectUnauthorized: true,
-          session: undefined,
-          ALPNProtocols: undefined,
-          requestOCSP: undefined,
-          enableTrace: undefined,
-          pskCallback: undefined,
-          highWaterMark: undefined,
-          onread: undefined,
-          signal: undefined
-        },
-        _secureEstablished: true,
-        _securePending: false,
-        _newSessionPending: false,
-        _controlReleased: true,
-        secureConnecting: false,
-        _SNICallback: null,
-        servername: 'civitai.com',
-        alpnProtocol: false,
-        authorized: true,
-        authorizationError: null,
-        encrypted: true,
-        _events: [Object: null prototype] {
-          close: [
-            [Function: onSocketCloseDestroySSL],
-            [Function: onClose],
-            [Function: socketCloseListener]
-          ],
-          end: [Function: onReadableStreamEnd],
-          newListener: [Function: keylogNewListener],
-          secure: [Function: onConnectSecure],
-          session: [Function (anonymous)],
-          free: [Function: onFree],
-          timeout: [Function: onTimeout],
-          agentRemove: [Function: onRemove],
-          error: [Function: socketErrorListener]
-        },
-        _eventsCount: 9,
-        connecting: false,
-        _hadError: false,
-        _parent: null,
-        _host: 'civitai.com',
-        _closeAfterHandlingError: false,
-        _readableState: ReadableState {
-          objectMode: false,
-          highWaterMark: 16384,
-          buffer: BufferList { head: null, tail: null, length: 0 },
-          length: 0,
-          pipes: [],
-          flowing: true,
-          ended: false,
-          endEmitted: false,
-          reading: true,
-          constructed: true,
-          sync: false,
-          needReadable: true,
-          emittedReadable: false,
-          readableListening: false,
-          resumeScheduled: false,
-          errorEmitted: false,
-          emitClose: false,
-          autoDestroy: true,
-          destroyed: true,
-          errored: null,
-          closed: true,
-          closeEmitted: true,
-          defaultEncoding: 'utf8',
-          awaitDrainWriters: null,
-          multiAwaitDrain: false,
-          readingMore: false,
-          dataEmitted: true,
-          decoder: null,
-          encoding: null,
-          [Symbol(kPaused)]: false
-        },
-        _maxListeners: undefined,
-        _writableState: WritableState {
-          objectMode: false,
-          highWaterMark: 16384,
-          finalCalled: true,
-          needDrain: false,
-          ending: true,
-          ended: true,
-          finished: true,
-          destroyed: true,
-          decodeStrings: false,
-          defaultEncoding: 'utf8',
-          length: 0,
-          writing: false,
-          corked: 0,
-          sync: false,
-          bufferProcessing: false,
-          onwrite: [Function: bound onwrite],
-          writecb: null,
-          writelen: 0,
-          afterWriteTickInfo: null,
-          buffered: [],
-          bufferedIndex: 0,
-          allBuffers: true,
-          allNoop: true,
-          pendingcb: 0,
-          constructed: true,
-          prefinished: true,
-          errorEmitted: false,
-          emitClose: false,
-          autoDestroy: true,
-          errored: null,
-          closed: true,
-          closeEmitted: true,
-          [Symbol(kOnFinished)]: []
-        },
-        allowHalfOpen: false,
-        _sockname: null,
-        _pendingData: null,
-        _pendingEncoding: '',
-        server: undefined,
-        _server: null,
-        ssl: null,
-        _requestCert: true,
-        _rejectUnauthorized: true,
-        parser: null,
-        _httpMessage: [Circular *1],
-        [Symbol(res)]: null,
-        [Symbol(verified)]: true,
-        [Symbol(pendingSession)]: null,
-        [Symbol(async_id_symbol)]: 5,
-        [Symbol(kHandle)]: null,
-        [Symbol(lastWriteQueueSize)]: 0,
-        [Symbol(timeout)]: null,
-        [Symbol(kBuffer)]: null,
-        [Symbol(kBufferCb)]: null,
-        [Symbol(kBufferGen)]: null,
-        [Symbol(kCapture)]: false,
-        [Symbol(kSetNoDelay)]: false,
-        [Symbol(kSetKeepAlive)]: true,
-        [Symbol(kSetKeepAliveInitialDelay)]: 60,
-        [Symbol(kBytesRead)]: 10522,
-        [Symbol(kBytesWritten)]: 223,
-        [Symbol(connect-options)]: {
-          rejectUnauthorized: true,
-          ciphers: 'TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA384:DHE-RSA-AES256-SHA384:ECDHE-RSA-AES256-SHA256:DHE-RSA-AES256-SHA256:HIGH:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!SRP:!CAMELLIA',
-          checkServerIdentity: [Function: checkServerIdentity],
-          minDHSize: 1024,
-          maxRedirects: 21,
-          maxBodyLength: Infinity,
-          protocol: 'https:',
-          path: null,
-          method: 'GET',
-          headers: [Object: null prototype] {
-            Accept: 'application/json, text/plain, */*',
-            'User-Agent': 'axios/1.3.4',
-            'Accept-Encoding': 'gzip, compress, deflate, br'
-          },
-          agents: { http: undefined, https: undefined },
-          auth: undefined,
-          beforeRedirect: [Function: dispatchBeforeRedirect],
-          beforeRedirects: { proxy: [Function: beforeRedirect] },
-          hostname: 'civitai.com',
-          port: 443,
-          agent: undefined,
-          nativeProtocols: { 'http:': [Object], 'https:': [Object] },
-          pathname: '/api/favorites',
-          search: '?apikey=0ba945e3aa1cba96fffe14c7dbb87afa',
-          _defaultAgent: Agent {
-            _events: [Object: null prototype],
-            _eventsCount: 2,
-            _maxListeners: undefined,
-            defaultPort: 443,
-            protocol: 'https:',
-            options: [Object: null prototype],
-            requests: [Object: null prototype] {},
-            sockets: [Object: null prototype] {},
-            freeSockets: [Object: null prototype] {},
-            keepAliveMsecs: 1000,
-            keepAlive: false,
-            maxSockets: Infinity,
-            maxFreeSockets: 256,
-            scheduling: 'lifo',
-            maxTotalSockets: Infinity,
-            totalSocketCount: 0,
-            maxCachedSessions: 100,
-            _sessionCache: [Object],
-            [Symbol(kCapture)]: false
-          },
-          host: 'civitai.com',
-          noDelay: true,
-          servername: 'civitai.com',
-          _agentKey: 'civitai.com:443:::::::::::::::::::::',
-          encoding: null,
-          singleUse: true
-        }
-      },
-      httpVersionMajor: 1,
-      httpVersionMinor: 1,
-      httpVersion: '1.1',
-      complete: true,
-      rawHeaders: [
-        'Date',
-        'Tue, 04 Apr 2023 15:31:03 GMT',
-        'Content-Type',
-        'text/html; charset=utf-8',
-        'Transfer-Encoding',
-        'chunked',
-        'Connection',
-        'close',
-        'Cache-Control',
-        'private, no-cache, no-store, max-age=0, must-revalidate',
-        'strict-transport-security',
-        'max-age=15724800; includeSubDomains',
-        'CF-Cache-Status',
-        'DYNAMIC',
-        'Report-To',
-        '{"endpoints":[{"url":"https:\\/\\/a.nel.cloudflare.com\\/report\\/v3?s=%2BhW4XQeKqEDWhM7TAQZTtUJlelNFGpCxK6cMUbEpLhTEGaOAMk0Y1sTACx%2F%2F3fQqoCwWWROrzPNu8EvahA3bgam44EwNzWqRc2MfermbZM8h4LwxsUqdHZb45cfoaGpzCoKTnZwjqQe4"}],"group":"cf-nel","max_age":604800}',
-        'NEL',
-        '{"success_fraction":0,"report_to":"cf-nel","max_age":604800}',
-        'Server',
-        'cloudflare',
-        'CF-RAY',
-        '7b2a9893becd2790-PRG',
-        'Content-Encoding',
-        'br'
-      ],
-      rawTrailers: [],
-      aborted: false,
-      upgrade: false,
-      url: '',
-      method: null,
-      statusCode: 404,
-      statusMessage: 'Not Found',
-      client: TLSSocket {
-        _tlsOptions: {
-          allowHalfOpen: undefined,
-          pipe: false,
-          secureContext: SecureContext { context: SecureContext {} },
-          isServer: false,
-          requestCert: true,
-          rejectUnauthorized: true,
-          session: undefined,
-          ALPNProtocols: undefined,
-          requestOCSP: undefined,
-          enableTrace: undefined,
-          pskCallback: undefined,
-          highWaterMark: undefined,
-          onread: undefined,
-          signal: undefined
-        },
-        _secureEstablished: true,
-        _securePending: false,
-        _newSessionPending: false,
-        _controlReleased: true,
-        secureConnecting: false,
-        _SNICallback: null,
-        servername: 'civitai.com',
-        alpnProtocol: false,
-        authorized: true,
-        authorizationError: null,
-        encrypted: true,
-        _events: [Object: null prototype] {
-          close: [
-            [Function: onSocketCloseDestroySSL],
-            [Function: onClose],
-            [Function: socketCloseListener]
-          ],
-          end: [Function: onReadableStreamEnd],
-          newListener: [Function: keylogNewListener],
-          secure: [Function: onConnectSecure],
-          session: [Function (anonymous)],
-          free: [Function: onFree],
-          timeout: [Function: onTimeout],
-          agentRemove: [Function: onRemove],
-          error: [Function: socketErrorListener]
-        },
-        _eventsCount: 9,
-        connecting: false,
-        _hadError: false,
-        _parent: null,
-        _host: 'civitai.com',
-        _closeAfterHandlingError: false,
-        _readableState: ReadableState {
-          objectMode: false,
-          highWaterMark: 16384,
-          buffer: BufferList { head: null, tail: null, length: 0 },
-          length: 0,
-          pipes: [],
-          flowing: true,
-          ended: false,
-          endEmitted: false,
-          reading: true,
-          constructed: true,
-          sync: false,
-          needReadable: true,
-          emittedReadable: false,
-          readableListening: false,
-          resumeScheduled: false,
-          errorEmitted: false,
-          emitClose: false,
-          autoDestroy: true,
-          destroyed: true,
-          errored: null,
-          closed: true,
-          closeEmitted: true,
-          defaultEncoding: 'utf8',
-          awaitDrainWriters: null,
-          multiAwaitDrain: false,
-          readingMore: false,
-          dataEmitted: true,
-          decoder: null,
-          encoding: null,
-          [Symbol(kPaused)]: false
-        },
-        _maxListeners: undefined,
-        _writableState: WritableState {
-          objectMode: false,
-          highWaterMark: 16384,
-          finalCalled: true,
-          needDrain: false,
-          ending: true,
-          ended: true,
-          finished: true,
-          destroyed: true,
-          decodeStrings: false,
-          defaultEncoding: 'utf8',
-          length: 0,
-          writing: false,
-          corked: 0,
-          sync: false,
-          bufferProcessing: false,
-          onwrite: [Function: bound onwrite],
-          writecb: null,
-          writelen: 0,
-          afterWriteTickInfo: null,
-          buffered: [],
-          bufferedIndex: 0,
-          allBuffers: true,
-          allNoop: true,
-          pendingcb: 0,
-          constructed: true,
-          prefinished: true,
-          errorEmitted: false,
-          emitClose: false,
-          autoDestroy: true,
-          errored: null,
-          closed: true,
-          closeEmitted: true,
-          [Symbol(kOnFinished)]: []
-        },
-        allowHalfOpen: false,
-        _sockname: null,
-        _pendingData: null,
-        _pendingEncoding: '',
-        server: undefined,
-        _server: null,
-        ssl: null,
-        _requestCert: true,
-        _rejectUnauthorized: true,
-        parser: null,
-        _httpMessage: [Circular *1],
-        [Symbol(res)]: null,
-        [Symbol(verified)]: true,
-        [Symbol(pendingSession)]: null,
-        [Symbol(async_id_symbol)]: 5,
-        [Symbol(kHandle)]: null,
-        [Symbol(lastWriteQueueSize)]: 0,
-        [Symbol(timeout)]: null,
-        [Symbol(kBuffer)]: null,
-        [Symbol(kBufferCb)]: null,
-        [Symbol(kBufferGen)]: null,
-        [Symbol(kCapture)]: false,
-        [Symbol(kSetNoDelay)]: false,
-        [Symbol(kSetKeepAlive)]: true,
-        [Symbol(kSetKeepAliveInitialDelay)]: 60,
-        [Symbol(kBytesRead)]: 10522,
-        [Symbol(kBytesWritten)]: 223,
-        [Symbol(connect-options)]: {
-          rejectUnauthorized: true,
-          ciphers: 'TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA384:DHE-RSA-AES256-SHA384:ECDHE-RSA-AES256-SHA256:DHE-RSA-AES256-SHA256:HIGH:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!SRP:!CAMELLIA',
-          checkServerIdentity: [Function: checkServerIdentity],
-          minDHSize: 1024,
-          maxRedirects: 21,
-          maxBodyLength: Infinity,
-          protocol: 'https:',
-          path: null,
-          method: 'GET',
-          headers: [Object: null prototype] {
-            Accept: 'application/json, text/plain, */*',
-            'User-Agent': 'axios/1.3.4',
-            'Accept-Encoding': 'gzip, compress, deflate, br'
-          },
-          agents: { http: undefined, https: undefined },
-          auth: undefined,
-          beforeRedirect: [Function: dispatchBeforeRedirect],
-          beforeRedirects: { proxy: [Function: beforeRedirect] },
-          hostname: 'civitai.com',
-          port: 443,
-          agent: undefined,
-          nativeProtocols: { 'http:': [Object], 'https:': [Object] },
-          pathname: '/api/favorites',
-          search: '?apikey=0ba945e3aa1cba96fffe14c7dbb87afa',
-          _defaultAgent: Agent {
-            _events: [Object: null prototype],
-            _eventsCount: 2,
-            _maxListeners: undefined,
-            defaultPort: 443,
-            protocol: 'https:',
-            options: [Object: null prototype],
-            requests: [Object: null prototype] {},
-            sockets: [Object: null prototype] {},
-            freeSockets: [Object: null prototype] {},
-            keepAliveMsecs: 1000,
-            keepAlive: false,
-            maxSockets: Infinity,
-            maxFreeSockets: 256,
-            scheduling: 'lifo',
-            maxTotalSockets: Infinity,
-            totalSocketCount: 0,
-            maxCachedSessions: 100,
-            _sessionCache: [Object],
-            [Symbol(kCapture)]: false
-          },
-          host: 'civitai.com',
-          noDelay: true,
-          servername: 'civitai.com',
-          _agentKey: 'civitai.com:443:::::::::::::::::::::',
-          encoding: null,
-          singleUse: true
-        }
-      },
-      _consuming: true,
-      _dumped: false,
-      req: [Circular *1],
-      responseUrl: 'https://civitai.com/api/favorites?apikey=0ba945e3aa1cba96fffe14c7dbb87afa',
-      redirects: [],
-      [Symbol(kCapture)]: false,
-      [Symbol(kHeaders)]: {
-        date: 'Tue, 04 Apr 2023 15:31:03 GMT',
-        'content-type': 'text/html; charset=utf-8',
-        'transfer-encoding': 'chunked',
-        connection: 'close',
-        'cache-control': 'private, no-cache, no-store, max-age=0, must-revalidate',
-        'strict-transport-security': 'max-age=15724800; includeSubDomains',
-        'cf-cache-status': 'DYNAMIC',
-        'report-to': '{"endpoints":[{"url":"https:\\/\\/a.nel.cloudflare.com\\/report\\/v3?s=%2BhW4XQeKqEDWhM7TAQZTtUJlelNFGpCxK6cMUbEpLhTEGaOAMk0Y1sTACx%2F%2F3fQqoCwWWROrzPNu8EvahA3bgam44EwNzWqRc2MfermbZM8h4LwxsUqdHZb45cfoaGpzCoKTnZwjqQe4"}],"group":"cf-nel","max_age":604800}',
-        nel: '{"success_fraction":0,"report_to":"cf-nel","max_age":604800}',
-        server: 'cloudflare',
-        'cf-ray': '7b2a9893becd2790-PRG'
-      },
-      [Symbol(kHeadersCount)]: 24,
-      [Symbol(kTrailers)]: null,
-      [Symbol(kTrailersCount)]: 0
-    },
-    aborted: false,
-    timeoutCb: null,
-    upgradeOrConnect: false,
-    parser: null,
-    maxHeadersCount: null,
-    reusedSocket: false,
-    host: 'civitai.com',
-    protocol: 'https:',
-    _redirectable: Writable {
-      _writableState: WritableState {
-        objectMode: false,
-        highWaterMark: 16384,
-        finalCalled: false,
-        needDrain: false,
-        ending: false,
-        ended: false,
-        finished: false,
-        destroyed: false,
-        decodeStrings: true,
-        defaultEncoding: 'utf8',
-        length: 0,
-        writing: false,
-        corked: 0,
-        sync: true,
-        bufferProcessing: false,
-        onwrite: [Function: bound onwrite],
-        writecb: null,
-        writelen: 0,
-        afterWriteTickInfo: null,
-        buffered: [],
-        bufferedIndex: 0,
-        allBuffers: true,
-        allNoop: true,
-        pendingcb: 0,
-        constructed: true,
-        prefinished: false,
-        errorEmitted: false,
-        emitClose: true,
-        autoDestroy: true,
-        errored: null,
-        closed: false,
-        closeEmitted: false,
-        [Symbol(kOnFinished)]: []
-      },
-      _events: [Object: null prototype] {
-        response: [Function: handleResponse],
-        error: [Function: handleRequestError],
-        socket: [Function: handleRequestSocket]
-      },
-      _eventsCount: 3,
-      _maxListeners: undefined,
-      _options: {
-        maxRedirects: 21,
-        maxBodyLength: Infinity,
-        protocol: 'https:',
-        path: '/api/favorites?apikey=0ba945e3aa1cba96fffe14c7dbb87afa',
-        method: 'GET',
-        headers: [Object: null prototype] {
-          Accept: 'application/json, text/plain, */*',
-          'User-Agent': 'axios/1.3.4',
-          'Accept-Encoding': 'gzip, compress, deflate, br'
-        },
-        agents: { http: undefined, https: undefined },
-        auth: undefined,
-        beforeRedirect: [Function: dispatchBeforeRedirect],
-        beforeRedirects: { proxy: [Function: beforeRedirect] },
-        hostname: 'civitai.com',
-        port: '',
-        agent: undefined,
-        nativeProtocols: {
-          'http:': {
-            _connectionListener: [Function: connectionListener],
-            METHODS: [Array],
-            STATUS_CODES: [Object],
-            Agent: [Function],
-            ClientRequest: [Function: ClientRequest],
-            IncomingMessage: [Function: IncomingMessage],
-            OutgoingMessage: [Function: OutgoingMessage],
-            Server: [Function: Server],
-            ServerResponse: [Function: ServerResponse],
-            createServer: [Function: createServer],
-            validateHeaderName: [Function: __node_internal_],
-            validateHeaderValue: [Function: __node_internal_],
-            get: [Function: get],
-            request: [Function: request],
-            setMaxIdleHTTPParsers: [Function: setMaxIdleHTTPParsers],
-            maxHeaderSize: [Getter],
-            globalAgent: [Getter/Setter]
-          },
-          'https:': {
-            Agent: [Function: Agent],
-            globalAgent: [Agent],
-            Server: [Function: Server],
-            createServer: [Function: createServer],
-            get: [Function: get],
-            request: [Function: request]
-          }
-        },
-        pathname: '/api/favorites',
-        search: '?apikey=0ba945e3aa1cba96fffe14c7dbb87afa'
-      },
-      _ended: true,
-      _ending: true,
-      _redirectCount: 0,
-      _redirects: [],
-      _requestBodyLength: 0,
-      _requestBodyBuffers: [],
-      _onNativeResponse: [Function (anonymous)],
-      _currentRequest: [Circular *1],
-      _currentUrl: 'https://civitai.com/api/favorites?apikey=0ba945e3aa1cba96fffe14c7dbb87afa',
-      [Symbol(kCapture)]: false
-    },
-    [Symbol(kCapture)]: false,
-    [Symbol(kBytesWritten)]: 0,
-    [Symbol(kEndCalled)]: true,
-    [Symbol(kNeedDrain)]: false,
-    [Symbol(corked)]: 0,
-    [Symbol(kOutHeaders)]: [Object: null prototype] {
-      accept: [ 'Accept', 'application/json, text/plain, */*' ],
-      'user-agent': [ 'User-Agent', 'axios/1.3.4' ],
-      'accept-encoding': [ 'Accept-Encoding', 'gzip, compress, deflate, br' ],
-      host: [ 'Host', 'civitai.com' ]
-    },
-    [Symbol(kUniqueHeaders)]: null
-  },
-  response: {
-    status: 404,
-    statusText: 'Not Found',
-    headers: AxiosHeaders {
-      date: 'Tue, 04 Apr 2023 15:31:03 GMT',
-      'content-type': 'text/html; charset=utf-8',
-      'transfer-encoding': 'chunked',
-      connection: 'close',
-      'cache-control': 'private, no-cache, no-store, max-age=0, must-revalidate',
-      'strict-transport-security': 'max-age=15724800; includeSubDomains',
-      'cf-cache-status': 'DYNAMIC',
-      'report-to': '{"endpoints":[{"url":"https:\\/\\/a.nel.cloudflare.com\\/report\\/v3?s=%2BhW4XQeKqEDWhM7TAQZTtUJlelNFGpCxK6cMUbEpLhTEGaOAMk0Y1sTACx%2F%2F3fQqoCwWWROrzPNu8EvahA3bgam44EwNzWqRc2MfermbZM8h4LwxsUqdHZb45cfoaGpzCoKTnZwjqQe4"}],"group":"cf-nel","max_age":604800}',
-      nel: '{"success_fraction":0,"report_to":"cf-nel","max_age":604800}',
-      server: 'cloudflare',
-      'cf-ray': '7b2a9893becd2790-PRG'
-    },
-    config: {
-      transitional: {
-        silentJSONParsing: true,
-        forcedJSONParsing: true,
-        clarifyTimeoutError: false
-      },
-      adapter: [ 'xhr', 'http' ],
-      transformRequest: [ [Function: transformRequest] ],
-      transformResponse: [ [Function: transformResponse] ],
-      timeout: 0,
-      xsrfCookieName: 'XSRF-TOKEN',
-      xsrfHeaderName: 'X-XSRF-TOKEN',
-      maxContentLength: -1,
-      maxBodyLength: -1,
-      env: {
-        FormData: [Function: FormData] {
-          LINE_BREAK: '\r\n',
-          DEFAULT_CONTENT_TYPE: 'application/octet-stream'
-        },
-        Blob: [class Blob]
-      },
-      validateStatus: [Function: validateStatus],
-      headers: AxiosHeaders {
-        Accept: 'application/json, text/plain, */*',
-        'User-Agent': 'axios/1.3.4',
-        'Accept-Encoding': 'gzip, compress, deflate, br'
-      },
-      method: 'get',
-      url: 'https://civitai.com/api/favorites?apikey=0ba945e3aa1cba96fffe14c7dbb87afa',
-      data: undefined
-    },
-    request: <ref *1> ClientRequest {
-      _events: [Object: null prototype] {
-        abort: [Function (anonymous)],
-        aborted: [Function (anonymous)],
-        connect: [Function (anonymous)],
-        error: [Function (anonymous)],
-        socket: [Function (anonymous)],
-        timeout: [Function (anonymous)],
-        finish: [Function: requestOnFinish]
-      },
-      _eventsCount: 7,
-      _maxListeners: undefined,
-      outputData: [],
-      outputSize: 0,
-      writable: true,
-      destroyed: true,
-      _last: true,
-      chunkedEncoding: false,
-      shouldKeepAlive: false,
-      maxRequestsOnConnectionReached: false,
-      _defaultKeepAlive: true,
-      useChunkedEncodingByDefault: false,
-      sendDate: false,
-      _removedConnection: false,
-      _removedContLen: false,
-      _removedTE: false,
-      strictContentLength: false,
-      _contentLength: 0,
-      _hasBody: true,
-      _trailer: '',
-      finished: true,
-      _headerSent: true,
-      _closed: true,
-      socket: TLSSocket {
-        _tlsOptions: {
-          allowHalfOpen: undefined,
-          pipe: false,
-          secureContext: SecureContext { context: SecureContext {} },
-          isServer: false,
-          requestCert: true,
-          rejectUnauthorized: true,
-          session: undefined,
-          ALPNProtocols: undefined,
-          requestOCSP: undefined,
-          enableTrace: undefined,
-          pskCallback: undefined,
-          highWaterMark: undefined,
-          onread: undefined,
-          signal: undefined
-        },
-        _secureEstablished: true,
-        _securePending: false,
-        _newSessionPending: false,
-        _controlReleased: true,
-        secureConnecting: false,
-        _SNICallback: null,
-        servername: 'civitai.com',
-        alpnProtocol: false,
-        authorized: true,
-        authorizationError: null,
-        encrypted: true,
-        _events: [Object: null prototype] {
-          close: [
-            [Function: onSocketCloseDestroySSL],
-            [Function: onClose],
-            [Function: socketCloseListener]
-          ],
-          end: [Function: onReadableStreamEnd],
-          newListener: [Function: keylogNewListener],
-          secure: [Function: onConnectSecure],
-          session: [Function (anonymous)],
-          free: [Function: onFree],
-          timeout: [Function: onTimeout],
-          agentRemove: [Function: onRemove],
-          error: [Function: socketErrorListener]
-        },
-        _eventsCount: 9,
-        connecting: false,
-        _hadError: false,
-        _parent: null,
-        _host: 'civitai.com',
-        _closeAfterHandlingError: false,
-        _readableState: ReadableState {
-          objectMode: false,
-          highWaterMark: 16384,
-          buffer: BufferList { head: null, tail: null, length: 0 },
-          length: 0,
-          pipes: [],
-          flowing: true,
-          ended: false,
-          endEmitted: false,
-          reading: true,
-          constructed: true,
-          sync: false,
-          needReadable: true,
-          emittedReadable: false,
-          readableListening: false,
-          resumeScheduled: false,
-          errorEmitted: false,
-          emitClose: false,
-          autoDestroy: true,
-          destroyed: true,
-          errored: null,
-          closed: true,
-          closeEmitted: true,
-          defaultEncoding: 'utf8',
-          awaitDrainWriters: null,
-          multiAwaitDrain: false,
-          readingMore: false,
-          dataEmitted: true,
-          decoder: null,
-          encoding: null,
-          [Symbol(kPaused)]: false
-        },
-        _maxListeners: undefined,
-        _writableState: WritableState {
-          objectMode: false,
-          highWaterMark: 16384,
-          finalCalled: true,
-          needDrain: false,
-          ending: true,
-          ended: true,
-          finished: true,
-          destroyed: true,
-          decodeStrings: false,
-          defaultEncoding: 'utf8',
-          length: 0,
-          writing: false,
-          corked: 0,
-          sync: false,
-          bufferProcessing: false,
-          onwrite: [Function: bound onwrite],
-          writecb: null,
-          writelen: 0,
-          afterWriteTickInfo: null,
-          buffered: [],
-          bufferedIndex: 0,
-          allBuffers: true,
-          allNoop: true,
-          pendingcb: 0,
-          constructed: true,
-          prefinished: true,
-          errorEmitted: false,
-          emitClose: false,
-          autoDestroy: true,
-          errored: null,
-          closed: true,
-          closeEmitted: true,
-          [Symbol(kOnFinished)]: []
-        },
-        allowHalfOpen: false,
-        _sockname: null,
-        _pendingData: null,
-        _pendingEncoding: '',
-        server: undefined,
-        _server: null,
-        ssl: null,
-        _requestCert: true,
-        _rejectUnauthorized: true,
-        parser: null,
-        _httpMessage: [Circular *1],
-        [Symbol(res)]: null,
-        [Symbol(verified)]: true,
-        [Symbol(pendingSession)]: null,
-        [Symbol(async_id_symbol)]: 5,
-        [Symbol(kHandle)]: null,
-        [Symbol(lastWriteQueueSize)]: 0,
-        [Symbol(timeout)]: null,
-        [Symbol(kBuffer)]: null,
-        [Symbol(kBufferCb)]: null,
-        [Symbol(kBufferGen)]: null,
-        [Symbol(kCapture)]: false,
-        [Symbol(kSetNoDelay)]: false,
-        [Symbol(kSetKeepAlive)]: true,
-        [Symbol(kSetKeepAliveInitialDelay)]: 60,
-        [Symbol(kBytesRead)]: 10522,
-        [Symbol(kBytesWritten)]: 223,
-        [Symbol(connect-options)]: {
-          rejectUnauthorized: true,
-          ciphers: 'TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA384:DHE-RSA-AES256-SHA384:ECDHE-RSA-AES256-SHA256:DHE-RSA-AES256-SHA256:HIGH:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!SRP:!CAMELLIA',
-          checkServerIdentity: [Function: checkServerIdentity],
-          minDHSize: 1024,
-          maxRedirects: 21,
-          maxBodyLength: Infinity,
-          protocol: 'https:',
-          path: null,
-          method: 'GET',
-          headers: [Object: null prototype] {
-            Accept: 'application/json, text/plain, */*',
-            'User-Agent': 'axios/1.3.4',
-            'Accept-Encoding': 'gzip, compress, deflate, br'
-          },
-          agents: { http: undefined, https: undefined },
-          auth: undefined,
-          beforeRedirect: [Function: dispatchBeforeRedirect],
-          beforeRedirects: { proxy: [Function: beforeRedirect] },
-          hostname: 'civitai.com',
-          port: 443,
-          agent: undefined,
-          nativeProtocols: { 'http:': [Object], 'https:': [Object] },
-          pathname: '/api/favorites',
-          search: '?apikey=0ba945e3aa1cba96fffe14c7dbb87afa',
-          _defaultAgent: Agent {
-            _events: [Object: null prototype],
-            _eventsCount: 2,
-            _maxListeners: undefined,
-            defaultPort: 443,
-            protocol: 'https:',
-            options: [Object: null prototype],
-            requests: [Object: null prototype] {},
-            sockets: [Object: null prototype] {},
-            freeSockets: [Object: null prototype] {},
-            keepAliveMsecs: 1000,
-            keepAlive: false,
-            maxSockets: Infinity,
-            maxFreeSockets: 256,
-            scheduling: 'lifo',
-            maxTotalSockets: Infinity,
-            totalSocketCount: 0,
-            maxCachedSessions: 100,
-            _sessionCache: [Object],
-            [Symbol(kCapture)]: false
-          },
-          host: 'civitai.com',
-          noDelay: true,
-          servername: 'civitai.com',
-          _agentKey: 'civitai.com:443:::::::::::::::::::::',
-          encoding: null,
-          singleUse: true
-        }
-      },
-      _header: 'GET /api/favorites?apikey=0ba945e3aa1cba96fffe14c7dbb87afa HTTP/1.1\r\n' +
-        'Accept: application/json, text/plain, */*\r\n' +
-        'User-Agent: axios/1.3.4\r\n' +
-        'Accept-Encoding: gzip, compress, deflate, br\r\n' +
-        'Host: civitai.com\r\n' +
-        'Connection: close\r\n' +
-        '\r\n',
-      _keepAliveTimeout: 0,
-      _onPendingData: [Function: nop],
-      agent: Agent {
-        _events: [Object: null prototype] {
-          free: [Function (anonymous)],
-          newListener: [Function: maybeEnableKeylog]
-        },
-        _eventsCount: 2,
-        _maxListeners: undefined,
-        defaultPort: 443,
-        protocol: 'https:',
-        options: [Object: null prototype] { noDelay: true, path: null },
-        requests: [Object: null prototype] {},
-        sockets: [Object: null prototype] {},
-        freeSockets: [Object: null prototype] {},
-        keepAliveMsecs: 1000,
-        keepAlive: false,
-        maxSockets: Infinity,
-        maxFreeSockets: 256,
-        scheduling: 'lifo',
-        maxTotalSockets: Infinity,
-        totalSocketCount: 0,
-        maxCachedSessions: 100,
-        _sessionCache: {
-          map: {
-            'civitai.com:443:::::::::::::::::::::': [Buffer [Uint8Array]]
-          },
-          list: [ 'civitai.com:443:::::::::::::::::::::' ]
-        },
-        [Symbol(kCapture)]: false
-      },
-      socketPath: undefined,
-      method: 'GET',
-      maxHeaderSize: undefined,
-      insecureHTTPParser: undefined,
-      path: '/api/favorites?apikey=0ba945e3aa1cba96fffe14c7dbb87afa',
-      _ended: true,
-      res: IncomingMessage {
-        _readableState: ReadableState {
-          objectMode: false,
-          highWaterMark: 16384,
-          buffer: BufferList { head: null, tail: null, length: 0 },
-          length: 0,
-          pipes: [],
-          flowing: false,
-          ended: true,
-          endEmitted: true,
-          reading: false,
-          constructed: true,
-          sync: false,
-          needReadable: false,
-          emittedReadable: false,
-          readableListening: false,
-          resumeScheduled: false,
-          errorEmitted: false,
-          emitClose: true,
-          autoDestroy: true,
-          destroyed: true,
-          errored: null,
-          closed: true,
-          closeEmitted: true,
-          defaultEncoding: 'utf8',
-          awaitDrainWriters: null,
-          multiAwaitDrain: false,
-          readingMore: false,
-          dataEmitted: true,
-          decoder: null,
-          encoding: null,
-          [Symbol(kPaused)]: true
-        },
-        _events: [Object: null prototype] {
-          end: [
-            [Function: responseOnEnd],
-            [Function: onend],
-            [Function: onend]
-          ],
-          close: [
-            [Function (anonymous)],
-            [Function: onclose],
-            [Function: onclose]
-          ],
-          finish: [ [Function: onfinish], [Function: onfinish] ],
-          error: [
-            [Function: onerror],
-            [Function: onError],
-            [Function: onerror]
-          ]
-        },
-        _eventsCount: 4,
-        _maxListeners: undefined,
-        socket: TLSSocket {
-          _tlsOptions: {
-            allowHalfOpen: undefined,
-            pipe: false,
-            secureContext: [SecureContext],
-            isServer: false,
-            requestCert: true,
-            rejectUnauthorized: true,
-            session: undefined,
-            ALPNProtocols: undefined,
-            requestOCSP: undefined,
-            enableTrace: undefined,
-            pskCallback: undefined,
-            highWaterMark: undefined,
-            onread: undefined,
-            signal: undefined
-          },
-          _secureEstablished: true,
-          _securePending: false,
-          _newSessionPending: false,
-          _controlReleased: true,
-          secureConnecting: false,
-          _SNICallback: null,
-          servername: 'civitai.com',
-          alpnProtocol: false,
-          authorized: true,
-          authorizationError: null,
-          encrypted: true,
-          _events: [Object: null prototype] {
-            close: [Array],
-            end: [Function: onReadableStreamEnd],
-            newListener: [Function: keylogNewListener],
-            secure: [Function: onConnectSecure],
-            session: [Function (anonymous)],
-            free: [Function: onFree],
-            timeout: [Function: onTimeout],
-            agentRemove: [Function: onRemove],
-            error: [Function: socketErrorListener]
-          },
-          _eventsCount: 9,
-          connecting: false,
-          _hadError: false,
-          _parent: null,
-          _host: 'civitai.com',
-          _closeAfterHandlingError: false,
-          _readableState: ReadableState {
-            objectMode: false,
-            highWaterMark: 16384,
-            buffer: [BufferList],
-            length: 0,
-            pipes: [],
-            flowing: true,
-            ended: false,
-            endEmitted: false,
-            reading: true,
-            constructed: true,
-            sync: false,
-            needReadable: true,
-            emittedReadable: false,
-            readableListening: false,
-            resumeScheduled: false,
-            errorEmitted: false,
-            emitClose: false,
-            autoDestroy: true,
-            destroyed: true,
-            errored: null,
-            closed: true,
-            closeEmitted: true,
-            defaultEncoding: 'utf8',
-            awaitDrainWriters: null,
-            multiAwaitDrain: false,
-            readingMore: false,
-            dataEmitted: true,
-            decoder: null,
-            encoding: null,
-            [Symbol(kPaused)]: false
-          },
-          _maxListeners: undefined,
-          _writableState: WritableState {
-            objectMode: false,
-            highWaterMark: 16384,
-            finalCalled: true,
-            needDrain: false,
-            ending: true,
-            ended: true,
-            finished: true,
-            destroyed: true,
-            decodeStrings: false,
-            defaultEncoding: 'utf8',
-            length: 0,
-            writing: false,
-            corked: 0,
-            sync: false,
-            bufferProcessing: false,
-            onwrite: [Function: bound onwrite],
-            writecb: null,
-            writelen: 0,
-            afterWriteTickInfo: null,
-            buffered: [],
-            bufferedIndex: 0,
-            allBuffers: true,
-            allNoop: true,
-            pendingcb: 0,
-            constructed: true,
-            prefinished: true,
-            errorEmitted: false,
-            emitClose: false,
-            autoDestroy: true,
-            errored: null,
-            closed: true,
-            closeEmitted: true,
-            [Symbol(kOnFinished)]: []
-          },
-          allowHalfOpen: false,
-          _sockname: null,
-          _pendingData: null,
-          _pendingEncoding: '',
-          server: undefined,
-          _server: null,
-          ssl: null,
-          _requestCert: true,
-          _rejectUnauthorized: true,
-          parser: null,
-          _httpMessage: [Circular *1],
-          [Symbol(res)]: null,
-          [Symbol(verified)]: true,
-          [Symbol(pendingSession)]: null,
-          [Symbol(async_id_symbol)]: 5,
-          [Symbol(kHandle)]: null,
-          [Symbol(lastWriteQueueSize)]: 0,
-          [Symbol(timeout)]: null,
-          [Symbol(kBuffer)]: null,
-          [Symbol(kBufferCb)]: null,
-          [Symbol(kBufferGen)]: null,
-          [Symbol(kCapture)]: false,
-          [Symbol(kSetNoDelay)]: false,
-          [Symbol(kSetKeepAlive)]: true,
-          [Symbol(kSetKeepAliveInitialDelay)]: 60,
-          [Symbol(kBytesRead)]: 10522,
-          [Symbol(kBytesWritten)]: 223,
-          [Symbol(connect-options)]: {
-            rejectUnauthorized: true,
-            ciphers: 'TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA384:DHE-RSA-AES256-SHA384:ECDHE-RSA-AES256-SHA256:DHE-RSA-AES256-SHA256:HIGH:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!SRP:!CAMELLIA',
-            checkServerIdentity: [Function: checkServerIdentity],
-            minDHSize: 1024,
-            maxRedirects: 21,
-            maxBodyLength: Infinity,
-            protocol: 'https:',
-            path: null,
-            method: 'GET',
-            headers: [Object: null prototype],
-            agents: [Object],
-            auth: undefined,
-            beforeRedirect: [Function: dispatchBeforeRedirect],
-            beforeRedirects: [Object],
-            hostname: 'civitai.com',
-            port: 443,
-            agent: undefined,
-            nativeProtocols: [Object],
-            pathname: '/api/favorites',
-            search: '?apikey=0ba945e3aa1cba96fffe14c7dbb87afa',
-            _defaultAgent: [Agent],
-            host: 'civitai.com',
-            noDelay: true,
-            servername: 'civitai.com',
-            _agentKey: 'civitai.com:443:::::::::::::::::::::',
-            encoding: null,
-            singleUse: true
-          }
-        },
-        httpVersionMajor: 1,
-        httpVersionMinor: 1,
-        httpVersion: '1.1',
-        complete: true,
-        rawHeaders: [
-          'Date',
-          'Tue, 04 Apr 2023 15:31:03 GMT',
-          'Content-Type',
-          'text/html; charset=utf-8',
-          'Transfer-Encoding',
-          'chunked',
-          'Connection',
-          'close',
-          'Cache-Control',
-          'private, no-cache, no-store, max-age=0, must-revalidate',
-          'strict-transport-security',
-          'max-age=15724800; includeSubDomains',
-          'CF-Cache-Status',
-          'DYNAMIC',
-          'Report-To',
-          '{"endpoints":[{"url":"https:\\/\\/a.nel.cloudflare.com\\/report\\/v3?s=%2BhW4XQeKqEDWhM7TAQZTtUJlelNFGpCxK6cMUbEpLhTEGaOAMk0Y1sTACx%2F%2F3fQqoCwWWROrzPNu8EvahA3bgam44EwNzWqRc2MfermbZM8h4LwxsUqdHZb45cfoaGpzCoKTnZwjqQe4"}],"group":"cf-nel","max_age":604800}',
-          'NEL',
-          '{"success_fraction":0,"report_to":"cf-nel","max_age":604800}',
-          'Server',
-          'cloudflare',
-          'CF-RAY',
-          '7b2a9893becd2790-PRG',
-          'Content-Encoding',
-          'br'
-        ],
-        rawTrailers: [],
-        aborted: false,
-        upgrade: false,
-        url: '',
-        method: null,
-        statusCode: 404,
-        statusMessage: 'Not Found',
-        client: TLSSocket {
-          _tlsOptions: {
-            allowHalfOpen: undefined,
-            pipe: false,
-            secureContext: [SecureContext],
-            isServer: false,
-            requestCert: true,
-            rejectUnauthorized: true,
-            session: undefined,
-            ALPNProtocols: undefined,
-            requestOCSP: undefined,
-            enableTrace: undefined,
-            pskCallback: undefined,
-            highWaterMark: undefined,
-            onread: undefined,
-            signal: undefined
-          },
-          _secureEstablished: true,
-          _securePending: false,
-          _newSessionPending: false,
-          _controlReleased: true,
-          secureConnecting: false,
-          _SNICallback: null,
-          servername: 'civitai.com',
-          alpnProtocol: false,
-          authorized: true,
-          authorizationError: null,
-          encrypted: true,
-          _events: [Object: null prototype] {
-            close: [Array],
-            end: [Function: onReadableStreamEnd],
-            newListener: [Function: keylogNewListener],
-            secure: [Function: onConnectSecure],
-            session: [Function (anonymous)],
-            free: [Function: onFree],
-            timeout: [Function: onTimeout],
-            agentRemove: [Function: onRemove],
-            error: [Function: socketErrorListener]
-          },
-          _eventsCount: 9,
-          connecting: false,
-          _hadError: false,
-          _parent: null,
-          _host: 'civitai.com',
-          _closeAfterHandlingError: false,
-          _readableState: ReadableState {
-            objectMode: false,
-            highWaterMark: 16384,
-            buffer: [BufferList],
-            length: 0,
-            pipes: [],
-            flowing: true,
-            ended: false,
-            endEmitted: false,
-            reading: true,
-            constructed: true,
-            sync: false,
-            needReadable: true,
-            emittedReadable: false,
-            readableListening: false,
-            resumeScheduled: false,
-            errorEmitted: false,
-            emitClose: false,
-            autoDestroy: true,
-            destroyed: true,
-            errored: null,
-            closed: true,
-            closeEmitted: true,
-            defaultEncoding: 'utf8',
-            awaitDrainWriters: null,
-            multiAwaitDrain: false,
-            readingMore: false,
-            dataEmitted: true,
-            decoder: null,
-            encoding: null,
-            [Symbol(kPaused)]: false
-          },
-          _maxListeners: undefined,
-          _writableState: WritableState {
-            objectMode: false,
-            highWaterMark: 16384,
-            finalCalled: true,
-            needDrain: false,
-            ending: true,
-            ended: true,
-            finished: true,
-            destroyed: true,
-            decodeStrings: false,
-            defaultEncoding: 'utf8',
-            length: 0,
-            writing: false,
-            corked: 0,
-            sync: false,
-            bufferProcessing: false,
-            onwrite: [Function: bound onwrite],
-            writecb: null,
-            writelen: 0,
-            afterWriteTickInfo: null,
-            buffered: [],
-            bufferedIndex: 0,
-            allBuffers: true,
-            allNoop: true,
-            pendingcb: 0,
-            constructed: true,
-            prefinished: true,
-            errorEmitted: false,
-            emitClose: false,
-            autoDestroy: true,
-            errored: null,
-            closed: true,
-            closeEmitted: true,
-            [Symbol(kOnFinished)]: []
-          },
-          allowHalfOpen: false,
-          _sockname: null,
-          _pendingData: null,
-          _pendingEncoding: '',
-          server: undefined,
-          _server: null,
-          ssl: null,
-          _requestCert: true,
-          _rejectUnauthorized: true,
-          parser: null,
-          _httpMessage: [Circular *1],
-          [Symbol(res)]: null,
-          [Symbol(verified)]: true,
-          [Symbol(pendingSession)]: null,
-          [Symbol(async_id_symbol)]: 5,
-          [Symbol(kHandle)]: null,
-          [Symbol(lastWriteQueueSize)]: 0,
-          [Symbol(timeout)]: null,
-          [Symbol(kBuffer)]: null,
-          [Symbol(kBufferCb)]: null,
-          [Symbol(kBufferGen)]: null,
-          [Symbol(kCapture)]: false,
-          [Symbol(kSetNoDelay)]: false,
-          [Symbol(kSetKeepAlive)]: true,
-          [Symbol(kSetKeepAliveInitialDelay)]: 60,
-          [Symbol(kBytesRead)]: 10522,
-          [Symbol(kBytesWritten)]: 223,
-          [Symbol(connect-options)]: {
-            rejectUnauthorized: true,
-            ciphers: 'TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA384:DHE-RSA-AES256-SHA384:ECDHE-RSA-AES256-SHA256:DHE-RSA-AES256-SHA256:HIGH:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!SRP:!CAMELLIA',
-            checkServerIdentity: [Function: checkServerIdentity],
-            minDHSize: 1024,
-            maxRedirects: 21,
-            maxBodyLength: Infinity,
-            protocol: 'https:',
-            path: null,
-            method: 'GET',
-            headers: [Object: null prototype],
-            agents: [Object],
-            auth: undefined,
-            beforeRedirect: [Function: dispatchBeforeRedirect],
-            beforeRedirects: [Object],
-            hostname: 'civitai.com',
-            port: 443,
-            agent: undefined,
-            nativeProtocols: [Object],
-            pathname: '/api/favorites',
-            search: '?apikey=0ba945e3aa1cba96fffe14c7dbb87afa',
-            _defaultAgent: [Agent],
-            host: 'civitai.com',
-            noDelay: true,
-            servername: 'civitai.com',
-            _agentKey: 'civitai.com:443:::::::::::::::::::::',
-            encoding: null,
-            singleUse: true
-          }
-        },
-        _consuming: true,
-        _dumped: false,
-        req: [Circular *1],
-        responseUrl: 'https://civitai.com/api/favorites?apikey=0ba945e3aa1cba96fffe14c7dbb87afa',
-        redirects: [],
-        [Symbol(kCapture)]: false,
-        [Symbol(kHeaders)]: {
-          date: 'Tue, 04 Apr 2023 15:31:03 GMT',
-          'content-type': 'text/html; charset=utf-8',
-          'transfer-encoding': 'chunked',
-          connection: 'close',
-          'cache-control': 'private, no-cache, no-store, max-age=0, must-revalidate',
-          'strict-transport-security': 'max-age=15724800; includeSubDomains',
-          'cf-cache-status': 'DYNAMIC',
-          'report-to': '{"endpoints":[{"url":"https:\\/\\/a.nel.cloudflare.com\\/report\\/v3?s=%2BhW4XQeKqEDWhM7TAQZTtUJlelNFGpCxK6cMUbEpLhTEGaOAMk0Y1sTACx%2F%2F3fQqoCwWWROrzPNu8EvahA3bgam44EwNzWqRc2MfermbZM8h4LwxsUqdHZb45cfoaGpzCoKTnZwjqQe4"}],"group":"cf-nel","max_age":604800}',
-          nel: '{"success_fraction":0,"report_to":"cf-nel","max_age":604800}',
-          server: 'cloudflare',
-          'cf-ray': '7b2a9893becd2790-PRG'
-        },
-        [Symbol(kHeadersCount)]: 24,
-        [Symbol(kTrailers)]: null,
-        [Symbol(kTrailersCount)]: 0
-      },
-      aborted: false,
-      timeoutCb: null,
-      upgradeOrConnect: false,
-      parser: null,
-      maxHeadersCount: null,
-      reusedSocket: false,
-      host: 'civitai.com',
-      protocol: 'https:',
-      _redirectable: Writable {
-        _writableState: WritableState {
-          objectMode: false,
-          highWaterMark: 16384,
-          finalCalled: false,
-          needDrain: false,
-          ending: false,
-          ended: false,
-          finished: false,
-          destroyed: false,
-          decodeStrings: true,
-          defaultEncoding: 'utf8',
-          length: 0,
-          writing: false,
-          corked: 0,
-          sync: true,
-          bufferProcessing: false,
-          onwrite: [Function: bound onwrite],
-          writecb: null,
-          writelen: 0,
-          afterWriteTickInfo: null,
-          buffered: [],
-          bufferedIndex: 0,
-          allBuffers: true,
-          allNoop: true,
-          pendingcb: 0,
-          constructed: true,
-          prefinished: false,
-          errorEmitted: false,
-          emitClose: true,
-          autoDestroy: true,
-          errored: null,
-          closed: false,
-          closeEmitted: false,
-          [Symbol(kOnFinished)]: []
-        },
-        _events: [Object: null prototype] {
-          response: [Function: handleResponse],
-          error: [Function: handleRequestError],
-          socket: [Function: handleRequestSocket]
-        },
-        _eventsCount: 3,
-        _maxListeners: undefined,
-        _options: {
-          maxRedirects: 21,
-          maxBodyLength: Infinity,
-          protocol: 'https:',
-          path: '/api/favorites?apikey=0ba945e3aa1cba96fffe14c7dbb87afa',
-          method: 'GET',
-          headers: [Object: null prototype] {
-            Accept: 'application/json, text/plain, */*',
-            'User-Agent': 'axios/1.3.4',
-            'Accept-Encoding': 'gzip, compress, deflate, br'
-          },
-          agents: { http: undefined, https: undefined },
-          auth: undefined,
-          beforeRedirect: [Function: dispatchBeforeRedirect],
-          beforeRedirects: { proxy: [Function: beforeRedirect] },
-          hostname: 'civitai.com',
-          port: '',
-          agent: undefined,
-          nativeProtocols: { 'http:': [Object], 'https:': [Object] },
-          pathname: '/api/favorites',
-          search: '?apikey=0ba945e3aa1cba96fffe14c7dbb87afa'
-        },
-        _ended: true,
-        _ending: true,
-        _redirectCount: 0,
-        _redirects: [],
-        _requestBodyLength: 0,
-        _requestBodyBuffers: [],
-        _onNativeResponse: [Function (anonymous)],
-        _currentRequest: [Circular *1],
-        _currentUrl: 'https://civitai.com/api/favorites?apikey=0ba945e3aa1cba96fffe14c7dbb87afa',
-        [Symbol(kCapture)]: false
-      },
-      [Symbol(kCapture)]: false,
-      [Symbol(kBytesWritten)]: 0,
-      [Symbol(kEndCalled)]: true,
-      [Symbol(kNeedDrain)]: false,
-      [Symbol(corked)]: 0,
-      [Symbol(kOutHeaders)]: [Object: null prototype] {
-        accept: [ 'Accept', 'application/json, text/plain, */*' ],
-        'user-agent': [ 'User-Agent', 'axios/1.3.4' ],
-        'accept-encoding': [ 'Accept-Encoding', 'gzip, compress, deflate, br' ],
-        host: [ 'Host', 'civitai.com' ]
-      },
-      [Symbol(kUniqueHeaders)]: null
-    },
-    data: '<!DOCTYPE html><html lang="en"><head><meta charSet="utf-8" /><meta name="viewport" content="width=device-width" /><meta name="viewport" content="maximum-scale=1, initial-scale=1, width=device-width" /><link rel="manifest" href="/site.webmanifest" /><meta name="apple-mobile-web-app-capable" content="yes" /><link rel="apple-touch-startup-image" href="/images/splash/apple-splash-2048-2732.jpg" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" /><link rel="apple-touch-startup-image" href="/images/splash/apple-splash-2732-2048.jpg" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" /><link rel="apple-touch-startup-image" href="/images/splash/apple-splash-1668-2388.jpg" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" /><link rel="apple-touch-startup-image" href="/images/splash/apple-splash-2388-1668.jpg" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" /><link rel="apple-touch-startup-image" href="/images/splash/apple-splash-1536-2048.jpg" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" /><link rel="apple-touch-startup-image" href="/images/splash/apple-splash-2048-1536.jpg" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" /><link rel="apple-touch-startup-image" href="/images/splash/apple-splash-1668-2224.jpg" media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" /><link rel="apple-touch-startup-image" href="/images/splash/apple-splash-2224-1668.jpg" media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" /><link rel="apple-touch-startup-image" href="/images/splash/apple-splash-1620-2160.jpg" media="(device-width: 810px) and (device-height: 1080px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" /><link rel="apple-touch-startup-image" href="/images/splash/apple-splash-2160-1620.jpg" media="(device-width: 810px) and (device-height: 1080px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" /><link rel="apple-touch-startup-image" href="/images/splash/apple-splash-1290-2796.jpg" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" /><link rel="apple-touch-startup-image" href="/images/splash/apple-splash-2796-1290.jpg" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)" /><link rel="apple-touch-startup-image" href="/images/splash/apple-splash-1179-2556.jpg" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" /><link rel="apple-touch-startup-image" href="/images/splash/apple-splash-2556-1179.jpg" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)" /><link rel="apple-touch-startup-image" href="/images/splash/apple-splash-1284-2778.jpg" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" /><link rel="apple-touch-startup-image" href="/images/splash/apple-splash-2778-1284.jpg" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)" /><link rel="apple-touch-startup-image" href="/images/splash/apple-splash-1170-2532.jpg" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" /><link rel="apple-touch-startup-image" href="/images/splash/apple-splash-2532-1170.jpg" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)" /><link rel="apple-touch-startup-image" href="/images/splash/apple-splash-1125-2436.jpg" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" /><link rel="apple-touch-startup-image" href="/images/splash/apple-splash-2436-1125.jpg" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)" /><link rel="apple-touch-startup-image" href="/images/splash/apple-splash-1242-2688.jpg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" /><link rel="apple-touch-startup-image" href="/images/splash/apple-splash-2688-1242.jpg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)" /><link rel="apple-touch-startup-image" href="/images/splash/apple-splash-828-1792.jpg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" /><link rel="apple-touch-startup-image" href="/images/splash/apple-splash-1792-828.jpg" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" /><link rel="apple-touch-startup-image" href="/images/splash/apple-splash-1242-2208.jpg" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" /><link rel="apple-touch-startup-image" href="/images/splash/apple-splash-2208-1242.jpg" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)" /><link rel="apple-touch-startup-image" href="/images/splash/apple-splash-750-1334.jpg" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" /><link rel="apple-touch-startup-image" href="/images/splash/apple-splash-1334-750.jpg" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" /><link rel="apple-touch-startup-image" href="/images/splash/apple-splash-640-1136.jpg" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" /><link rel="apple-touch-startup-image" href="/images/splash/apple-splash-1136-640.jpg" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" /><link rel="apple-touch-startup-image" href="/images/splash/apple-splash-dark-2048-2732.jpg" media="(prefers-color-scheme: dark) and (device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" /><link rel="apple-touch-startup-image" href="/images/splash/apple-splash-dark-2732-2048.jpg" media="(prefers-color-scheme: dark) and (device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" /><link rel="apple-touch-startup-image" href="/images/splash/apple-splash-dark-1668-2388.jpg" media="(prefers-color-scheme: dark) and (device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" /><link rel="apple-touch-startup-image" href="/images/splash/apple-splash-dark-2388-1668.jpg" media="(prefers-color-scheme: dark) and (device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" /><link rel="apple-touch-startup-image" href="/images/splash/apple-splash-dark-1536-2048.jpg" media="(prefers-color-scheme: dark) and (device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" /><link rel="apple-touch-startup-image" href="/images/splash/apple-splash-dark-2048-1536.jpg" media="(prefers-color-scheme: dark) and (device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" /><link rel="apple-touch-startup-image" href="/images/splash/apple-splash-dark-1668-2224.jpg" media="(prefers-color-scheme: dark) and (device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" /><link rel="apple-touch-startup-image" href="/images/splash/apple-splash-dark-2224-1668.jpg" media="(prefers-color-scheme: dark) and (device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" /><link rel="apple-touch-startup-image" href="/images/splash/apple-splash-dark-1620-2160.jpg" media="(prefers-color-scheme: dark) and (device-width: 810px) and (device-height: 1080px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" /><link rel="apple-touch-startup-image" href="/images/splash/apple-splash-dark-2160-1620.jpg" media="(prefers-color-scheme: dark) and (device-width: 810px) and (device-height: 1080px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" /><link rel="apple-touch-startup-image" href="/images/splash/apple-splash-dark-1290-2796.jpg" media="(prefers-color-scheme: dark) and (device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" /><link rel="apple-touch-startup-image" href="/images/splash/apple-splash-dark-2796-1290.jpg" media="(prefers-color-scheme: dark) and (device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)" /><link rel="apple-touch-startup-image" href="/images/splash/apple-splash-dark-1179-2556.jpg" media="(prefers-color-scheme: dark) and (device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" /><link rel="apple-touch-startup-image" href="/images/splash/apple-splash-dark-2556-1179.jpg" media="(prefers-color-scheme: dark) an'... 58586 more characters
+    {
+      "username": "maxhulker",
+      "modelCount": 2,
+      "link": "https://civitai.com/api/v1/models?username=maxhulker"
+    }
+  ],
+  "metadata": {
+    "totalItems": 46,
+    "currentPage": 1,
+    "pageSize": 3,
+    "totalPages": 16,
+    "nextPage": "https://civitai.com/api/v1/creators?limit=3&page=2"
   }
 }
+GET /api/v1/models
+Endpoint URL
+https://civitai.com/api/v1/models
 
-Node.js v18.12.1
+Query Parameters
+Name	Type	Description
+limit (OPTIONAL)	number	The number of results to be returned per page. This can be a number between 1 and 200. By default, each page will return 100 results
+page (OPTIONAL)	number	The page from which to start fetching models
+query (OPTIONAL)	string	Search query to filter models by name
+tag (OPTIONAL)	string	Search query to filter models by tag
+username (OPTIONAL)	string	Search query to filter models by user
+types (OPTIONAL)	enum[] (Checkpoint, TextualInversion, Hypernetwork, AestheticGradient, LORA, Controlnet, Poses)	The type of model you want to filter with. If none is specified, it will return all types
+sort (OPTIONAL)	enum (Highest Rated, Most Downloaded, Newest)	The order in which you wish to sort the results
+period (OPTIONAL)	enum (AllTime, Year, Month, Week, Day)	The time frame in which the models will be sorted
+rating (OPTIONAL)	number	The rating you wish to filter the models with. If none is specified, it will return models with any rating
+favorites (OPTIONAL) (AUTHED)	boolean	Filter to favorites of the authenticated user (this requires an API token or session cookie)
+hidden (OPTIONAL) (AUTHED)	boolean	Filter to hidden models of the authenticated user (this requires an API token or session cookie)
+primaryFileOnly (OPTIONAL)	boolean	Only include the primary file for each model (This will use your preferred format options if you use an API token or session cookie)
+allowNoCredit (OPTIONAL)	boolean	Filter to models that require or don't require crediting the creator
+allowDerivatives (OPTIONAL)	boolean	Filter to models that allow or don't allow creating derivatives
+allowDifferentLicenses (OPTIONAL)	boolean	Filter to models that allow or don't allow derivatives to have a different license
+allowCommercialUse (OPTIONAL)	enum (None, Image, Rent, Sell)	Filter to models based on their commercial permissions
+Response Fields
+Name	Type	Description
+id	number	The identifier for the model
+name	string	The name of the model
+description	string	The description of the model (HTML)
+type	enum (Checkpoint, TextualInversion, Hypernetwork, AestheticGradient, LORA, Controlnet, Poses)	The model type
+nsfw	boolean	Whether the model is NSFW or not
+tags	string[]	The tags associated with the model
+creator.username	string	The name of the creator
+creator.image	string | null	The url of the creators avatar
+modelVersions.id	number	The identifier for the model version
+modelVersions.name	string	The name of the model version
+modelVersions.description	string	The description of the model version (usually a changelog)
+modelVersions.createdAt	Date	The date in which the version was created
+modelVersions.downloadUrl	string	The download url to get the model file for this specific version
+modelVersions.trainedWords	string[]	The words used to trigger the model
+modelVersions.files.sizeKb	number	The size of the model file
+modelVersions.files.format	string	The format of the file ('pickle' or 'safetensor')
+modelVersions.files.pickleScanResult	string	Status of the pickle scan ('Pending', 'Success', 'Danger', 'Error')
+modelVersions.files.virusScanResult	string	Status of the virus scan ('Pending', 'Success', 'Danger', 'Error')
+modelVersions.files.scannedAt	Date | null	The date in which the file was scanned
+modelVersions.files.primary	boolean | undefined	If the file is the primary file for the model version
+modelVersions.images.url	string	The url for the image
+modelVersions.images.nsfw	string	Whether or not the image is NSFW (note: if the model is NSFW, treat all images on the model as NSFW)
+modelVersions.images.width	number	The original width of the image
+modelVersions.images.height	number	The original height of the image
+modelVersions.images.hash	string	The blurhash of the image
+modelVersions.images.meta	object | null	The generation params of the image
+metadata.totalItems	string	The total number of items available
+metadata.currentPage	string	The the current page you are at
+metadata.pageSize	string	The the size of the batch
+metadata.totalPages	string	The total number of pages
+metadata.nextPage	string	The url to get the next batch of items
+metadata.prevPage	string	The url to get the previous batch of items
+Note: The download url uses a content-disposition header to set the filename correctly. Be sure to enable that header when fetching the download. For example, with wget:
 
-N:\AI-image\model traning\aa>
+wget https://civitai.com/api/download/models/{modelVersionId} --content-disposition
+Example
+The following example shows a request to get the first 3 TextualInversion models from our database:
+
+curl https://civitai.com/api/v1/models?limit=3&types=TextualInversion \
+-H "Content-Type: application/json" \
+-X GET
+This would yield the following response:
+
+{
+  "items": [
+    {
+      "id": 64,
+      "name": "Redshift Diffusion",
+      "type": "Checkpoint",
+      "nsfw": false,
+      "tags": [
+        "render",
+        "3d",
+        "style"
+      ],
+      "modelVersions": [
+        {
+          "id": 73,
+          "name": "v1",
+          "createdAt": "2022-11-13T02:43:39.839Z",
+          "trainedWords": [
+            "redshift style"
+          ],
+          "downloadUrl": "https://civitai.com/api/download/models/73"
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "name": "Arcane Diffusion",
+      "type": "Checkpoint",
+      "nsfw": false,
+      "tags": [
+        "style",
+        "Anime",
+        "Arcane",
+        "League of Legends ",
+        "nitrosocke"
+      ],
+      "modelVersions": [
+        {
+          "id": 23,
+          "name": "V1",
+          "createdAt": "2022-11-04T19:41:24.643Z",
+          "trainedWords": [
+            "arcane style"
+          ],
+          "downloadUrl": "https://civitai.com/api/download/models/23"
+        },
+        {
+          "id": 25,
+          "name": "V3",
+          "createdAt": "2022-11-04T19:45:47.336Z",
+          "trainedWords": [
+            "arcane style"
+          ],
+          "downloadUrl": "https://civitai.com/api/download/models/25"
+        },
+        {
+          "id": 24,
+          "name": "V2",
+          "createdAt": "2022-11-04T19:42:47.336Z",
+          "trainedWords": [
+            "arcane style"
+          ],
+          "downloadUrl": "https://civitai.com/api/download/models/24"
+        }
+      ]
+    },
+    {
+      "id": 1087,
+      "name": "Inkpunk Diffusion",
+      "type": "Checkpoint",
+      "nsfw": false,
+      "tags": [
+        "style",
+        "illustration",
+        "Yoji Shinkawa",
+        "flcl",
+        "gorillaz",
+        "punk"
+      ],
+      "modelVersions": [
+        {
+          "id": 1138,
+          "name": "v2",
+          "createdAt": "2022-11-28T20:32:37.237Z",
+          "trainedWords": [
+            "nvinkpunk"
+          ],
+          "downloadUrl": "https://civitai.com/api/download/models/1138"
+        },
+        {
+          "id": 1087,
+          "name": "v1",
+          "createdAt": "2022-11-25T16:47:49.287Z",
+          "trainedWords": [
+            "nvinkpunk"
+          ],
+          "downloadUrl": "https://civitai.com/api/download/models/1087"
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "totalItems": 967,
+    "currentPage": 1,
+    "pageSize": 3,
+    "totalPages": 323,
+    "nextPage": "https://civitai.com/api/v1/models?limit=3&types=TextualInversion&page=2"
+  }
+}
+GET /api/v1/models/:modelId
+Endpoint URL
+https://civitai.com/api/v1/models/:modelId
+
+Response Fields
+Name	Type	Description
+id	number	The identifier for the model
+name	string	The name of the model
+description	string	The description of the model (HTML)
+type	enum (Checkpoint, TextualInversion, Hypernetwork, AestheticGradient, LORA, Controlnet, Poses)	The model type
+nsfw	boolean	Whether the model is NSFW or not
+tags	string[]	The tags associated with the model
+creator.username	string	The name of the creator
+creator.image	string | null	The url of the creators avatar
+modelVersions.id	number	The identifier for the model version
+modelVersions.name	string	The name of the model version
+modelVersions.description	string	The description of the model version (usually a changelog)
+modelVersions.createdAt	Date	The date in which the version was created
+modelVersions.downloadUrl	string	The download url to get the model file for this specific version
+modelVersions.trainedWords	string[]	The words used to trigger the model
+modelVersions.files.sizeKb	number	The size of the model file
+modelVersions.files.format	string	The format of the file ('pickle' or 'safetensor')
+modelVersions.files.pickleScanResult	string	Status of the pickle scan ('Pending', 'Success', 'Danger', 'Error')
+modelVersions.files.virusScanResult	string	Status of the virus scan ('Pending', 'Success', 'Danger', 'Error')
+modelVersions.files.scannedAt	Date | null	The date in which the file was scanned
+modelVersions.images.url	string	The url for the image
+modelVersions.images.nsfw	string	Whether or not the image is NSFW (note: if the model is NSFW, treat all images on the model as NSFW)
+modelVersions.images.width	number	The original width of the image
+modelVersions.images.height	number	The original height of the image
+modelVersions.images.hash	string	The blurhash of the image
+modelVersions.images.meta	object | null	The generation params of the image
+Note: The download url uses a content-disposition header to set the filename correctly. Be sure to enable that header when fetching the download. For example, with wget:
+
+wget https://civitai.com/api/download/models/{modelVersionId} --content-disposition
+Example
+The following example shows a request to get the first 3 TextualInversion models from our database:
+
+curl https://civitai.com/api/v1/models/1102 \
+-H "Content-Type: application/json" \
+-X GET
+This would yield the following response:
+
+{
+  "id": 1102,
+  "name": "SynthwavePunk",
+  "description": "<p>This is a 50/50 Merge of <a target=\"_blank\" rel=\"ugc\" href=\"https://civitai.com/models/1061\">Synthwave</a> and <a target=\"_blank\" rel=\"ugc\" href=\"https://civitai.com/models/1087\">InkPunk</a> you can use both of their keywords and use prompt weighting to balance between these two cool and complimentary styles.</p><p><strong>I'm on the search for V3!</strong> Check out these <a rel=\"ugc\" href=\"https://civitai.com/models/2856/synthpunk-search\">potential candidates</a> and let me know which you prefer and if either of them are good enough to be the latest version of this model.</p>",
+  "type": "Checkpoint",
+  "poi": false,
+  "nsfw": false,
+  "allowNoCredit": true,
+  "allowCommercialUse": "Sell",
+  "allowDerivatives": true,
+  "allowDifferentLicense": true,
+  "creator": {
+    "username": "justmaier",
+    "image": "https://cdn.discordapp.com/avatars/303445765865603073/a_42042dcc2eb7bdd70faeb2270b07e6d9.jpg"
+  },
+  "tags": [
+    "style",
+    "punk",
+    "synthwave",
+    "merge"
+  ],
+  "modelVersions": [
+    {
+      "id": 1144,
+      "name": "V2",
+      "createdAt": "2022-11-30T01:14:36.498Z",
+      "updatedAt": "2022-12-23T22:36:26.197Z",
+      "trainedWords": [
+        "snthwve style",
+        "nvinkpunk"
+      ],
+      "baseModel": "SD 1.5",
+      "files": [
+        {
+          "name": "synthwavepunk_v2.ckpt",
+          "id": 196,
+          "sizeKB": 2082690.173828125,
+          "type": "Model",
+          "format": "PickleTensor",
+          "pickleScanResult": "Success",
+          "pickleScanMessage": "No Pickle imports",
+          "virusScanResult": "Success",
+          "scannedAt": "2022-12-07T10:52:53.433Z",
+          "hashes": {
+
+          },
+          "downloadUrl": "http://localhost:3000/api/download/models/1144"
+        }
+      ],
+      "images": [
+        {
+          "url": "https://imagecache.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/3cabeab1-a1c9-4a02-ac76-3a9ed69a1700/width=450",
+          "nsfw": false,
+          "width": 512,
+          "height": 704,
+          "hash": "UGH,Y~2o0Y=@5O||S=ENA7vy4.JC9#B-=|rx",
+          "meta": {
+            "Size": "512x704",
+            "seed": 785137026,
+            "steps": 30,
+            "prompt": "snthwve style nvinkpunk drunken beautiful woman as delirium from sandman, (hallucinating colorful soap bubbles), by jeremy mann, by sandra chevrier, by dave mckean and richard avedon and maciej kuciara, punk rock, tank girl, high detailed, 8k",
+            "sampler": "Euler a",
+            "cfgScale": 7,
+            "Model hash": "27ea8c02",
+            "negativePrompt": "cartoon, 3d, ((disfigured)), ((bad art)), ((deformed)), ((poorly drawn)), ((extra limbs)), ((close up)), ((b&w)), weird colors, blurry"
+          }
+        }
+      ],
+      "downloadUrl": "http://localhost:3000/api/download/models/1144"
+    }
+  ]
+}
+GET /api/v1/models-versions/:modelVersionId
+Endpoint URL
+https://civitai.com/api/v1/model-versions/:id
+
+Response Fields
+Name	Type	Description
+id	number	The identifier for the model version
+name	string	The name of the model version
+description	string	The description of the model version (usually a changelog)
+model.name	string	The name of the model
+model.type	enum (Checkpoint, TextualInversion, Hypernetwork, AestheticGradient, LORA, Controlnet, Poses)	The model type
+model.nsfw	boolean	Whether the model is NSFW or not
+model.poi	boolean	Whether the model is of a person of interest or not
+modelId	number	The identifier for the model
+createdAt	Date	The date in which the version was created
+downloadUrl	string	The download url to get the model file for this specific version
+trainedWords	string[]	The words used to trigger the model
+files.sizeKb	number	The size of the model file
+files.format	string	The format of the file ('pickle' or 'safetensor')
+files.pickleScanResult	string	Status of the pickle scan ('Pending', 'Success', 'Danger', 'Error')
+files.virusScanResult	string	Status of the virus scan ('Pending', 'Success', 'Danger', 'Error')
+files.scannedAt	Date | null	The date in which the file was scanned
+images.url	string	The url for the image
+images.nsfw	string	Whether or not the image is NSFW (note: if the model is NSFW, treat all images on the model as NSFW)
+images.width	number	The original width of the image
+images.height	number	The original height of the image
+images.hash	string	The blurhash of the image
+images.meta	object | null	The generation params of the image
+Note: The download url uses a content-disposition header to set the filename correctly. Be sure to enable that header when fetching the download. For example, with wget:
+
+wget https://civitai.com/api/download/models/{modelVersionId} --content-disposition
+Example
+The following example shows a request to get a model version from our database:
+
+curl https://civitai.com/api/v1/modelVersions/1318 \
+-H "Content-Type: application/json" \
+-X GET
+This would yield the following response:
+
+{
+  "id": 1318,
+  "name": "toad",
+  "createdAt": "2022-12-08T19:58:49.765Z",
+  "updatedAt": "2022-12-08T20:24:50.330Z",
+  "trainedWords": [
+    "ttdddd"
+  ],
+  "modelId": 1244,
+  "modelName": "froggy style",
+  "files": [
+    {
+      "sizeKB": 2546414.971679688,
+      "format": "PickleTensor",
+      "pickleScanResult": "Success",
+      "pickleScanMessage": "**Detected Pickle imports (3)**\n```\ncollections.OrderedDict\ntorch.HalfStorage\ntorch._utils._rebuild_tensor_v2\n```",
+      "virusScanResult": "Success",
+      "scannedAt": "2022-12-08T20:15:36.133Z"
+    }
+  ],
+  "images": [
+    {
+      "url": "https://imagecache.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/c6ed4a9d-ae75-463b-7762-da0455cc5700/width=450",
+      "nsfw": false,
+      "width": 832,
+      "height": 832,
+      "hash": "U8Civ__MTeSP?utJ9IDj?^Ek=}RQyEE1-Vr=",
+      "meta": null
+    },
+    {
+      "url": "https://imagecache.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/ed1af033-e944-49ae-5957-f516710f8c00/width=450",
+      "nsfw": false,
+      "width": 1024,
+      "height": 1024,
+      "hash": "UMECq1DkIoMy_LIVD+Rk-oRjMytRslWBoeoe",
+      "meta": null
+    }
+  ],
+  "downloadUrl": "https://civitai.com/api/download/models/1318"
+}
+GET /api/v1/models-versions/by-hash/:hash
+Endpoint URL
+https://civitai.com/api/v1/model-versions/by-hash/:hash
+
+Response Fields
+Same as standard model-versions endpoint
+
+Note: We support the following hash algorithms: AutoV1, AutoV2, SHA256, CRC32, and Blake3
+
+Note 2: We are still in the process of hashing older files, so these results are incomplete
+
+GET /api/v1/tags
+Endpoint URL
+https://civitai.com/api/v1/tags
+
+Query Parameters
+Name	Type	Description
+limit (OPTIONAL)	number	The number of results to be returned per page. This can be a number between 1 and 200. By default, each page will return 20 results. If set to 0, it'll return all the tags
+page (OPTIONAL)	number	The page from which to start fetching tags
+query (OPTIONAL)	string	Search query to filter tags by name
+Response Fields
+Name	Type	Description
+name	string	The name of the tag
+modelCount	number	The amount of models linked to this tag
+link	string	Url to get all models from this tag
+metadata.totalItems	string	The total number of items available
+metadata.currentPage	string	The the current page you are at
+metadata.pageSize	string	The the size of the batch
+metadata.totalPages	string	The total number of pages
+metadata.nextPage	string	The url to get the next batch of items
+metadata.prevPage	string	The url to get the previous batch of items
+Example
+The following example shows a request to get the first 3 model tags from our database:
+
+curl https://civitai.com/api/v1/tags?limit=3 \
+-H "Content-Type: application/json" \
+-X GET
+This would yield the following response:
+
+{
+  "items": [
+    {
+      "name": "Pepe Larraz",
+      "modelCount": 1,
+      "link": "https://civitai.com/api/v1/models?tag=Pepe Larraz"
+    },
+    {
+      "name": "comic book",
+      "modelCount": 7,
+      "link": "https://civitai.com/api/v1/models?tag=comic book"
+    },
+    {
+      "name": "style",
+      "modelCount": 91,
+      "link": "https://civitai.com/api/v1/models?tag=style"
+    }
+  ],
+  "metadata": {
+    "totalItems": 200,
+    "currentPage": 1,
+    "pageSize": 3,
+    "totalPages": 67,
+    "nextPage": "https://civitai.com/api/v1/tags?limit=3&page=2"
+  }
+}
